@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار تفاعلي 2 — ممارسات الموارد البشرية</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:#f0f4f8;color:#1a202c;direction:rtl}
+.header{background:linear-gradient(135deg,#1e3a5f,#2d6a9f);color:white;padding:2rem;text-align:center}
+.header h1{font-size:1.6rem;font-weight:900;margin-bottom:.3rem}
+.header p{font-size:.88rem;opacity:.85}
+.tabs{display:flex;flex-wrap:wrap;background:white;border-bottom:3px solid #e2e8f0;justify-content:center;position:sticky;top:0;z-index:100}
+.tab{padding:.8rem 1.3rem;border:none;background:none;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;color:#718096;border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .2s}
+.tab.active{color:#1e3a5f;border-bottom-color:#1e3a5f}
+.tab:hover{color:#2d6a9f}
+.panel{display:none;max-width:860px;margin:0 auto;padding:1.5rem}
+.panel.active{display:block}
+.score-bar{background:white;border-radius:12px;padding:1rem 1.4rem;margin-bottom:1.2rem;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.score-label{font-size:.83rem;color:#718096;font-weight:600}
+.score-num{font-size:1.4rem;font-weight:900;color:#1e3a5f}
+.prog-wrap{flex:1;min-width:120px;background:#e2e8f0;border-radius:20px;height:10px;overflow:hidden}
+.prog-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#38a169,#68d391);transition:width .4s;width:0%}
+.reset-btn{padding:.45rem 1.1rem;background:#e53e3e;color:white;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer}
+.reset-btn:hover{background:#c53030}
+.q-card{background:white;border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.q-num{font-size:.75rem;font-weight:700;color:#a0aec0;margin-bottom:.35rem}
+.q-text{font-size:.93rem;font-weight:700;color:#1e3a5f;margin-bottom:.8rem;line-height:1.7}
+.tf-row{display:flex;gap:.7rem}
+.tf-btn{flex:1;padding:.58rem;border:2px solid #e2e8f0;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;background:white;transition:all .2s}
+.tf-btn:hover:not([disabled]){background:#ebf4ff;border-color:#2d6a9f}
+.opt{padding:.58rem 1rem;border:2px solid #e2e8f0;border-radius:8px;font-family:'Cairo',sans-serif;font-size:.88rem;cursor:pointer;background:white;text-align:right;display:block;width:100%;margin:.35rem 0;transition:all .2s}
+.opt:hover:not([disabled]){background:#ebf4ff;border-color:#2d6a9f}
+.ok{background:#c6f6d5!important;border-color:#38a169!important;color:#276749!important;font-weight:700!important}
+.err{background:#fed7d7!important;border-color:#e53e3e!important;color:#c53030!important}
+.show-ok{background:#c6f6d5!important;border-color:#38a169!important;color:#276749!important;font-weight:700!important}
+.fb{margin-top:.6rem;padding:.5rem .85rem;border-radius:8px;font-size:.83rem;line-height:1.6;display:none}
+.fb.show{display:block}
+.fb-ok{background:#f0fff4;color:#276749;border-right:4px solid #38a169}
+.fb-err{background:#fff5f5;color:#c53030;border-right:4px solid #e53e3e}
+.essay-card{background:white;border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.essay-q{font-size:.93rem;font-weight:700;color:#1e3a5f;margin-bottom:.75rem;line-height:1.7}
+textarea{width:100%;min-height:90px;border:2px solid #e2e8f0;border-radius:8px;padding:.65rem .9rem;font-family:'Cairo',sans-serif;font-size:.86rem;resize:vertical;direction:rtl;color:#2d3748}
+textarea:focus{outline:none;border-color:#2d6a9f}
+.model-btn{margin-top:.55rem;padding:.4rem 1rem;background:#1e3a5f;color:white;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer}
+.model-btn:hover{background:#2d6a9f}
+.model-ans{display:none;margin-top:.65rem;padding:.85rem 1rem;background:#f7fafc;border-radius:8px;border-right:4px solid #2d6a9f;font-size:.87rem;line-height:1.9;color:#374151}
+.model-ans.show{display:block}
+.result-box{background:white;border-radius:16px;padding:2rem;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.08);margin-bottom:1rem}
+.result-score{font-size:2.8rem;font-weight:900;color:#1e3a5f;margin:.5rem 0}
+.result-msg{font-size:1rem;color:#4a5568;margin-bottom:1rem}
+.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-top:1rem}
+.result-item{background:#f7fafc;border-radius:10px;padding:.8rem;font-size:.85rem;text-align:center}
+.result-item strong{display:block;font-size:1.2rem;color:#1e3a5f}
+.restart-btn{margin-top:1rem;padding:.7rem 2rem;background:#1e3a5f;color:white;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer}
+.restart-btn:hover{background:#2d6a9f}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 اختبار تفاعلي — ممارسات الموارد البشرية</h1>
+  <p>صح وخطأ (20) | اختيار من متعدد (20) | أسئلة مقالية (6)</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showP('tf',this)">✅ صح وخطأ (20)</button>
+  <button class="tab" onclick="showP('mcq',this)">🔵 اختيار من متعدد (20)</button>
+  <button class="tab" onclick="showP('essay',this)">📝 مقالية (6)</button>
+  <button class="tab" onclick="showP('result',this)">📊 نتيجتي</button>
+</div>
+
+<!-- ===== TF ===== -->
+<div id="panel-tf" class="panel active">
+  <div class="score-bar">
+    <div><div class="score-label">درجتك</div><div class="score-num" id="tf-sc">0 / 20</div></div>
+    <div class="prog-wrap"><div class="prog-fill" id="tf-bar"></div></div>
+    <button class="reset-btn" onclick="resetTF()">🔄 إعادة</button>
+  </div>
+
+  <div class="q-card" id="tc1"><div class="q-num">1 / 20</div><div class="q-text">العدالة التنظيمية تُعنى بأن تكون جميع أنشطة المنظمة عادلة ومنصفة لجميع الأطراف.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(1,true)">✓ صح</button><button class="tf-btn" onclick="doTF(1,false)">✗ خطأ</button></div><div class="fb" id="tf-fb1"></div></div>
+
+  <div class="q-card" id="tc2"><div class="q-num">2 / 20</div><div class="q-text">منظور الأعمال للعدالة يركز على أن المنظمة تلتزم بمعايير الأخلاق بغض النظر عن الأرباح.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(2,true)">✓ صح</button><button class="tf-btn" onclick="doTF(2,false)">✗ خطأ</button></div><div class="fb" id="tf-fb2"></div></div>
+
+  <div class="q-card" id="tc3"><div class="q-num">3 / 20</div><div class="q-text">مبدأ الإنصاف يوزع الموارد بناءً على المساهمات التي يقدمها الأفراد أو المجموعات.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(3,true)">✓ صح</button><button class="tf-btn" onclick="doTF(3,false)">✗ خطأ</button></div><div class="fb" id="tf-fb3"></div></div>
+
+  <div class="q-card" id="tc4"><div class="q-num">4 / 20</div><div class="q-text">قاعدة "النتائج" في مبدأ المساواة تعني المساواة في وقت محدد من توزيع الموارد فقط.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(4,true)">✓ صح</button><button class="tf-btn" onclick="doTF(4,false)">✗ خطأ</button></div><div class="fb" id="tf-fb4"></div></div>
+
+  <div class="q-card" id="tc5"><div class="q-num">5 / 20</div><div class="q-text">قاعدة "التصحيح" في العدالة الإجرائية تعني إمكانية تعديل قرارات التخصيص وتصحيح الأخطاء.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(5,true)">✓ صح</button><button class="tf-btn" onclick="doTF(5,false)">✗ خطأ</button></div><div class="fb" id="tf-fb5"></div></div>
+
+  <div class="q-card" id="tc6"><div class="q-num">6 / 20</div><div class="q-text">تصميم الوظيفة وفق ماكشين وفون غلينو (2010) هو عملية اختيار الموظف المناسب للوظيفة المناسبة.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(6,true)">✓ صح</button><button class="tf-btn" onclick="doTF(6,false)">✗ خطأ</button></div><div class="fb" id="tf-fb6"></div></div>
+
+  <div class="q-card" id="tc7"><div class="q-num">7 / 20</div><div class="q-text">التدوير الوظيفي يزيد من مرونة المنظمة في استبدال الموظفين عند الغياب أو الإصابة.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(7,true)">✓ صح</button><button class="tf-btn" onclick="doTF(7,false)">✗ خطأ</button></div><div class="fb" id="tf-fb7"></div></div>
+
+  <div class="q-card" id="tc8"><div class="q-num">8 / 20</div><div class="q-text">توسيع نطاق الوظيفة يُضمّن محفزات الرضا الحقيقية في العمل ذاته وهو أقوى استراتيجيات التحفيز.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(8,true)">✓ صح</button><button class="tf-btn" onclick="doTF(8,false)">✗ خطأ</button></div><div class="fb" id="tf-fb8"></div></div>
+
+  <div class="q-card" id="tc9"><div class="q-num">9 / 20</div><div class="q-text">الوصف الوظيفي يحدد الصفات الإنسانية اللازمة كالخبرة والتعليم والقدرات البدنية لشغل الوظيفة.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(9,true)">✓ صح</button><button class="tf-btn" onclick="doTF(9,false)">✗ خطأ</button></div><div class="fb" id="tf-fb9"></div></div>
+
+  <div class="q-card" id="tc10"><div class="q-num">10 / 20</div><div class="q-text">أشار سوليفان (1997) إلى أن التوظيف ليس بالعملية السهلة وهو يختلف عن استهداف العملاء.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(10,true)">✓ صح</button><button class="tf-btn" onclick="doTF(10,false)">✗ خطأ</button></div><div class="fb" id="tf-fb10"></div></div>
+
+  <div class="q-card" id="tc11"><div class="q-num">11 / 20</div><div class="q-text">منظور المواطنة في التوظيف يركز على التأكد من امتلاك المرشح للمهارات التقنية اللازمة.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(11,true)">✓ صح</button><button class="tf-btn" onclick="doTF(11,false)">✗ خطأ</button></div><div class="fb" id="tf-fb11"></div></div>
+
+  <div class="q-card" id="tc12"><div class="q-num">12 / 20</div><div class="q-text">التوظيف المؤقت أرخص تكلفةً من الدائم لأنه لا توجد حوافز أو ترقيات.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(12,true)">✓ صح</button><button class="tf-btn" onclick="doTF(12,false)">✗ خطأ</button></div><div class="fb" id="tf-fb12"></div></div>
+
+  <div class="q-card" id="tc13"><div class="q-num">13 / 20</div><div class="q-text">العقد النفسي هو وثيقة رسمية تُوقَّع بين الموظف والمنظمة عند التعيين.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(13,true)">✓ صح</button><button class="tf-btn" onclick="doTF(13,false)">✗ خطأ</button></div><div class="fb" id="tf-fb13"></div></div>
+
+  <div class="q-card" id="tc14"><div class="q-num">14 / 20</div><div class="q-text">الهدف التطويري لتقييم الأداء يساعد الأعضاء على تنمية مهاراتهم وقدراتهم.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(14,true)">✓ صح</button><button class="tf-btn" onclick="doTF(14,false)">✗ خطأ</button></div><div class="fb" id="tf-fb14"></div></div>
+
+  <div class="q-card" id="tc15"><div class="q-num">15 / 20</div><div class="q-text">خطأ الهالة يعني أن المقيّم يُصنّف جميع الموظفين بشكل مرتفع بسبب التساهل.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(15,true)">✓ صح</button><button class="tf-btn" onclick="doTF(15,false)">✗ خطأ</button></div><div class="fb" id="tf-fb15"></div></div>
+
+  <div class="q-card" id="tc16"><div class="q-num">16 / 20</div><div class="q-text">سلوك المواطنة التنظيمية سلوك تقديري لا يُعترف به مباشرةً من نظام المكافأة الرسمي.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(16,true)">✓ صح</button><button class="tf-btn" onclick="doTF(16,false)">✗ خطأ</button></div><div class="fb" id="tf-fb16"></div></div>
+
+  <div class="q-card" id="tc17"><div class="q-num">17 / 20</div><div class="q-text">المكافآت المباشرة تشمل التأمين الطبي والإجازة المدفوعة والضمان الاجتماعي.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(17,true)">✓ صح</button><button class="tf-btn" onclick="doTF(17,false)">✗ خطأ</button></div><div class="fb" id="tf-fb17"></div></div>
+
+  <div class="q-card" id="tc18"><div class="q-num">18 / 20</div><div class="q-text">جدول SPJS يتضمن ثلاثة أبعاد: أبعاد الهيكل والأبعاد الاجتماعية والأبعاد الإضافية.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(18,true)">✓ صح</button><button class="tf-btn" onclick="doTF(18,false)">✗ خطأ</button></div><div class="fb" id="tf-fb18"></div></div>
+
+  <div class="q-card" id="tc19"><div class="q-num">19 / 20</div><div class="q-text">أساس الأقدمية في المكافآت يُحفّز الموظفين الشباب على بذل جهد أكبر.</div><div class="tf-row"><button class="tf-btn" onclick="doTF(19,true)">✓ صح</button><button class="tf-btn" onclick="doTF(19,false)">✗ خطأ</button></div><div class="fb" id="tf-fb19"></div></div>
+
+  <div class="q-card" id="tc20"><div class="q-num">20 / 20</div><div class="q-text">يمكن للمنظمة الجمع بين أكثر من أساس واحد عند بناء نظام المكافآت (مزيج المكافآت).</div><div class="tf-row"><button class="tf-btn" onclick="doTF(20,true)">✓ صح</button><button class="tf-btn" onclick="doTF(20,false)">✗ خطأ</button></div><div class="fb" id="tf-fb20"></div></div>
+</div>
+
+<!-- ===== MCQ ===== -->
+<div id="panel-mcq" class="panel">
+  <div class="score-bar">
+    <div><div class="score-label">درجتك</div><div class="score-num" id="mcq-sc">0 / 20</div></div>
+    <div class="prog-wrap"><div class="prog-fill" id="mcq-bar"></div></div>
+    <button class="reset-btn" onclick="resetMCQ()">🔄 إعادة</button>
+  </div>
+
+  <div class="q-card"><div class="q-num">1 / 20</div><div class="q-text">ما المنظور الذي يركز على الخسائر الناجمة عن الممارسات الظالمة في المنظمة؟</div><div id="mo1"><button class="opt" onclick="doMCQ(1,this,false)">أ) المنظور الأخلاقي</button><button class="opt" onclick="doMCQ(1,this,true)">ب) منظور الأعمال</button><button class="opt" onclick="doMCQ(1,this,false)">ج) المنظور القانوني</button><button class="opt" onclick="doMCQ(1,this,false)">د) المنظور الاجتماعي</button></div><div class="fb" id="mcq-fb1"></div></div>
+
+  <div class="q-card"><div class="q-num">2 / 20</div><div class="q-text">حدد تورنبلم وجونسون ثلاث قواعد فرعية لمبدأ الإنصاف. أيٌّ مما يلي ليس منها؟</div><div id="mo2"><button class="opt" onclick="doMCQ(2,this,false)">أ) الجهد المبذول</button><button class="opt" onclick="doMCQ(2,this,false)">ب) القدرة الفطرية أو المحققة</button><button class="opt" onclick="doMCQ(2,this,false)">ج) أداء الفرد</button><button class="opt" onclick="doMCQ(2,this,true)">د) الأقدمية في العمل</button></div><div class="fb" id="mcq-fb2"></div></div>
+
+  <div class="q-card"><div class="q-num">3 / 20</div><div class="q-text">أيٌّ من قواعد ليفينثال (1980) يعني أن التخصيصات يجب أن تلتزم بالمعايير الأخلاقية السائدة؟</div><div id="mo3"><button class="opt" onclick="doMCQ(3,this,false)">أ) الاتساق</button><button class="opt" onclick="doMCQ(3,this,false)">ب) الدقة</button><button class="opt" onclick="doMCQ(3,this,true)">ج) الأخلاق</button><button class="opt" onclick="doMCQ(3,this,false)">د) التمثيل</button></div><div class="fb" id="mcq-fb3"></div></div>
+
+  <div class="q-card"><div class="q-num">4 / 20</div><div class="q-text">حدد هيرزبرغ (1974) عدداً من مميزات الوظيفة "الثرية". ما العدد الصحيح؟</div><div id="mo4"><button class="opt" onclick="doMCQ(4,this,false)">أ) خمسة مميزات</button><button class="opt" onclick="doMCQ(4,this,false)">ب) ستة مميزات</button><button class="opt" onclick="doMCQ(4,this,true)">ج) ثمانية مميزات</button><button class="opt" onclick="doMCQ(4,this,false)">د) عشرة مميزات</button></div><div class="fb" id="mcq-fb4"></div></div>
+
+  <div class="q-card"><div class="q-num">5 / 20</div><div class="q-text">"منح الموظف سلطة التواصل مباشرةً مع الموردين وأصحاب المصلحة" هو من مميزات الوظيفة الثرية — أيٌّ منها؟</div><div id="mo5"><button class="opt" onclick="doMCQ(5,this,false)">أ) التحكم في الموارد</button><button class="opt" onclick="doMCQ(5,this,false)">ب) المسؤولية الشخصية</button><button class="opt" onclick="doMCQ(5,this,true)">ج) صلاحية التواصل المباشر</button><button class="opt" onclick="doMCQ(5,this,false)">د) الخبرة الفريدة</button></div><div class="fb" id="mcq-fb5"></div></div>
+
+  <div class="q-card"><div class="q-num">6 / 20</div><div class="q-text">ما الاستراتيجية التي تجعل الأفراد يتناسبون مع الوظيفة مهما كان تصميمها ومتطلباتها؟</div><div id="mo6"><button class="opt" onclick="doMCQ(6,this,true)">أ) تبسيط الوظائف</button><button class="opt" onclick="doMCQ(6,this,false)">ب) التدوير الوظيفي</button><button class="opt" onclick="doMCQ(6,this,false)">ج) توسيع نطاق الوظيفة</button><button class="opt" onclick="doMCQ(6,this,false)">د) الإثراء الوظيفي</button></div><div class="fb" id="mcq-fb6"></div></div>
+
+  <div class="q-card"><div class="q-num">7 / 20</div><div class="q-text">ما الخطوة الأولى في التركيز على الوظائف عند التوظيف؟</div><div id="mo7"><button class="opt" onclick="doMCQ(7,this,false)">أ) كتابة الوصف الوظيفي</button><button class="opt" onclick="doMCQ(7,this,true)">ب) تقييم الاحتياجات من الموظفين</button><button class="opt" onclick="doMCQ(7,this,false)">ج) تحليل الوظيفة</button><button class="opt" onclick="doMCQ(7,this,false)">د) الإعلان عن الوظيفة</button></div><div class="fb" id="mcq-fb7"></div></div>
+
+  <div class="q-card"><div class="q-num">8 / 20</div><div class="q-text">أشار شنيدر وبوين (1992) أن الأفراد يُوظَّفون بناءً على:</div><div id="mo8"><button class="opt" onclick="doMCQ(8,this,false)">أ) مهاراتهم التقنية فقط</button><button class="opt" onclick="doMCQ(8,this,false)">ب) خبرتهم السابقة فقط</button><button class="opt" onclick="doMCQ(8,this,true)">ج) هويتهم وليس فقط إمكاناتهم</button><button class="opt" onclick="doMCQ(8,this,false)">د) مؤهلاتهم الأكاديمية فقط</button></div><div class="fb" id="mcq-fb8"></div></div>
+
+  <div class="q-card"><div class="q-num">9 / 20</div><div class="q-text">ما الفرق بين الطرد والتسريح وفق روبنز (1997)؟</div><div id="mo9"><button class="opt" onclick="doMCQ(9,this,false)">أ) لا فرق — كلاهما إنهاء خدمة بسبب الأداء</button><button class="opt" onclick="doMCQ(9,this,true)">ب) الطرد عقوبة على مخالفة، والتسريح قرار تنظيمي لتقليص الموظفين</button><button class="opt" onclick="doMCQ(9,this,false)">ج) الطرد مؤقت والتسريح دائم</button><button class="opt" onclick="doMCQ(9,this,false)">د) التسريح عقوبة والطرد قرار إداري</button></div><div class="fb" id="mcq-fb9"></div></div>
+
+  <div class="q-card"><div class="q-num">10 / 20</div><div class="q-text">أيٌّ من التالي يُعدّ من أبعاد الهيكل في جدول SPJS؟</div><div id="mo10"><button class="opt" onclick="doMCQ(10,this,false)">أ) المعالجة (عومل بأدب واحترام)</button><button class="opt" onclick="doMCQ(10,this,false)">ب) الانفتاح (معاملة صادقة ومرنة)</button><button class="opt" onclick="doMCQ(10,this,true)">ج) التنبؤية (النهج مرتبط بالوظيفة)</button><button class="opt" onclick="doMCQ(10,this,false)">د) نوعية الأسئلة (بدون تحيز)</button></div><div class="fb" id="mcq-fb10"></div></div>
+
+  <div class="q-card"><div class="q-num">11 / 20</div><div class="q-text">ما المقصود بالهدف الإداري لتقييم الأداء؟</div><div id="mo11"><button class="opt" onclick="doMCQ(11,this,false)">أ) مساعدة الموظفين على تطوير مهاراتهم</button><button class="opt" onclick="doMCQ(11,this,true)">ب) اتخاذ قرارات مقارنة بشأن الراتب والترقية</button><button class="opt" onclick="doMCQ(11,this,false)">ج) تحسين بيئة العمل وعلاقات الفريق</button><button class="opt" onclick="doMCQ(11,this,false)">د) وضع الأهداف الاستراتيجية للمنظمة</button></div><div class="fb" id="mcq-fb11"></div></div>
+
+  <div class="q-card"><div class="q-num">12 / 20</div><div class="q-text">وفق كامبل (1993)، أيٌّ من مجالات الأداء يُقيّم مدى التزام الموظف بالمعايير المهنية والمجتمعية؟</div><div id="mo12"><button class="opt" onclick="doMCQ(12,this,false)">أ) الجهد</button><button class="opt" onclick="doMCQ(12,this,false)">ب) تسهيل أداء الزملاء</button><button class="opt" onclick="doMCQ(12,this,true)">ج) الانضباط الشخصي</button><button class="opt" onclick="doMCQ(12,this,false)">د) التواصل الكتابي والشفوي</button></div><div class="fb" id="mcq-fb12"></div></div>
+
+  <div class="q-card"><div class="q-num">13 / 20</div><div class="q-text">ما الخطأ الذي يحدث عندما يُقيّم المدير أداء موظف بناءً على أحدث سلوك له فقط؟</div><div id="mo13"><button class="opt" onclick="doMCQ(13,this,false)">أ) خطأ الهالة</button><button class="opt" onclick="doMCQ(13,this,true)">ب) خطأ الحداثة</button><button class="opt" onclick="doMCQ(13,this,false)">ج) خطأ التباين</button><button class="opt" onclick="doMCQ(13,this,false)">د) الاتجاه المركزي</button></div><div class="fb" id="mcq-fb13"></div></div>
+
+  <div class="q-card"><div class="q-num">14 / 20</div><div class="q-text">ما الغرض من تطبيق هنج 360 درجة في تقييم الأداء؟</div><div id="mo14"><button class="opt" onclick="doMCQ(14,this,false)">أ) تقليل تكاليف التقييم</button><button class="opt" onclick="doMCQ(14,this,false)">ب) الاعتماد على رأي المدير المباشر فقط</button><button class="opt" onclick="doMCQ(14,this,true)">ج) الحصول على ردود فعل من مصادر متعددة لصورة أشمل</button><button class="opt" onclick="doMCQ(14,this,false)">د) تقييم الموظف مرة واحدة سنوياً فقط</button></div><div class="fb" id="mcq-fb14"></div></div>
+
+  <div class="q-card"><div class="q-num">15 / 20</div><div class="q-text">أيٌّ من أهداف أنظمة المكافآت يرتبط مباشرةً بنموذج بورتر ولر (1968)؟</div><div id="mo15"><button class="opt" onclick="doMCQ(15,this,false)">أ) جذب الموظفين الجيدين</button><button class="opt" onclick="doMCQ(15,this,false)">ب) الحد من التغيب</button><button class="opt" onclick="doMCQ(15,this,true)">ج) التحفيز لتعزيز الأداء</button><button class="opt" onclick="doMCQ(15,this,false)">د) تطوير مهارات الموظفين</button></div><div class="fb" id="mcq-fb15"></div></div>
+
+  <div class="q-card"><div class="q-num">16 / 20</div><div class="q-text">أيٌّ من أنواع المكافآت التالية يندرج ضمن المكافآت غير المباشرة؟</div><div id="mo16"><button class="opt" onclick="doMCQ(16,this,false)">أ) المكافآت المالية الفورية</button><button class="opt" onclick="doMCQ(16,this,false)">ب) علاوات الجدارة</button><button class="opt" onclick="doMCQ(16,this,true)">ج) التأمين الطبي والإجازة المدفوعة</button><button class="opt" onclick="doMCQ(16,this,false)">د) الراتب الأساسي</button></div><div class="fb" id="mcq-fb16"></div></div>
+
+  <div class="q-card"><div class="q-num">17 / 20</div><div class="q-text">أشار لولر (1987) إلى أن مشاركة الأعضاء في قرارات الأجور تخلق:</div><div id="mo17"><button class="opt" onclick="doMCQ(17,this,false)">أ) ثقافة النخبوية</button><button class="opt" onclick="doMCQ(17,this,true)">ب) ثقافة المشاركة</button><button class="opt" onclick="doMCQ(17,this,false)">ج) ثقافة التنافس</button><button class="opt" onclick="doMCQ(17,this,false)">د) ثقافة الاستقلالية</button></div><div class="fb" id="mcq-fb17"></div></div>
+
+  <div class="q-card"><div class="q-num">18 / 20</div><div class="q-text">ما أساس المكافأة الأنسب للمنظمات الحكومية لسهولة قياسه وموضوعيته؟</div><div id="mo18"><button class="opt" onclick="doMCQ(18,this,false)">أ) الأداء</button><button class="opt" onclick="doMCQ(18,this,false)">ب) المهارة</button><button class="opt" onclick="doMCQ(18,this,true)">ج) الأقدمية</button><button class="opt" onclick="doMCQ(18,this,false)">د) العمل</button></div><div class="fb" id="mcq-fb18"></div></div>
+
+  <div class="q-card"><div class="q-num">19 / 20</div><div class="q-text">ما الذي يميّز العقد النفسي عن العقد الرسمي؟</div><div id="mo19"><button class="opt" onclick="doMCQ(19,this,false)">أ) العقد النفسي موثق قانونياً</button><button class="opt" onclick="doMCQ(19,this,true)">ب) العقد النفسي توقعات ضمنية غير مكتوبة تشمل التزامات غير رسمية</button><button class="opt" onclick="doMCQ(19,this,false)">ج) العقد النفسي يُحدد الراتب والمزايا</button><button class="opt" onclick="doMCQ(19,this,false)">د) لا فرق بينهما</button></div><div class="fb" id="mcq-fb19"></div></div>
+
+  <div class="q-card"><div class="q-num">20 / 20</div><div class="q-text">دعا روز (2014) إلى نهج معين في بناء أنظمة المكافآت. ما هو؟</div><div id="mo20"><button class="opt" onclick="doMCQ(20,this,false)">أ) نهج "الأفضل" بتقليد ما يفعله السوق</button><button class="opt" onclick="doMCQ(20,this,false)">ب) نهج "الأغلى" لجذب أفضل الكفاءات</button><button class="opt" onclick="doMCQ(20,this,true)">ج) نهج "الأنسب" بتكييف المكافآت مع ثقافة المنظمة</button><button class="opt" onclick="doMCQ(20,this,false)">د) نهج "الأسرع" لتحفيز الأداء الفوري</button></div><div class="fb" id="mcq-fb20"></div></div>
+</div>
+
+<!-- ===== ESSAY ===== -->
+<div id="panel-essay" class="panel">
+  <div class="score-bar" style="justify-content:flex-start"><div class="score-label">📝 اكتب إجابتك ثم اطّلع على النموذج</div></div>
+
+  <div class="essay-card">
+    <div class="essay-q">1. ما المقصود بمبدأ الحاجة في توزيع الموارد؟ أعطِ مثالاً.</div>
+    <textarea placeholder="اكتب إجابتك هنا..."></textarea>
+    <button class="model-btn" onclick="toggleModel(this)">👁️ الإجابة النموذجية</button>
+    <div class="model-ans">مبدأ الحاجة يعني أن الموارد والمكافآت توزع وفقاً لاحتياجات الأفراد أو الوحدات. المنطق بسيط: من يحتاج أكثر يحصل على أكثر. مثال: قد تعرض المنظمة زيادة في الأجور بناءً على عدد الأطفال الذين يعولهم الموظف — الموظف الذي لديه أطفال أكثر يحتاج مالاً أكثر لتربيتهم. ويتجلى هذا أيضاً في قوانين ضريبة الدخل التي تتيح إعفاءات إضافية لكل معال.</div>
+  </div>
+
+  <div class="essay-card">
+    <div class="essay-q">2. ما الفرق بين التدوير الوظيفي وتوسيع نطاق الوظيفة؟</div>
+    <textarea placeholder="اكتب إجابتك هنا..."></textarea>
+    <button class="model-btn" onclick="toggleModel(this)">👁️ الإجابة النموذجية</button>
+    <div class="model-ans"><strong>التدوير الوظيفي:</strong> نقل الموظف بشكل دوري من وظيفة إلى أخرى مختلفة. يضيف إثارة وحماساً فورياً قد يزول مع الوقت، ويزيد المرونة في الاستبدال عند الغياب.<br><strong>توسيع نطاق الوظيفة:</strong> تكليف الموظف بمهام أكثر ضمن نفس الوظيفة. قد ينظر إليه الموظفون على أنه استغلال، وأثره على التحفيز ضئيل إذا ظلت المهام المضافة مبسطة وروتينية.</div>
+  </div>
+
+  <div class="essay-card">
+    <div class="essay-q">3. ما أهمية تحليل الوظيفة في عملية التوظيف؟</div>
+    <textarea placeholder="اكتب إجابتك هنا..."></textarea>
+    <button class="model-btn" onclick="toggleModel(this)">👁️ الإجابة النموذجية</button>
+    <div class="model-ans">تحليل الوظيفة هو دراسة الوظيفة والمهام المختلفة المرتبطة بها. يُستخدم للأغراض التالية: أولاً، يُوفر معلومات حول أنواع القدرات المطلوبة لأداء الوظيفة. ثانياً، تنبثق منه كل من المواصفات الوظيفية والوصف الوظيفي. يمكن إجراؤه بطريقتين: وضع قائمة بالأهداف للوظيفة الجديدة، أو مراقبة شاغلي الوظيفة الحاليين في الوظائف الموجودة مسبقاً.</div>
+  </div>
+
+  <div class="essay-card">
+    <div class="essay-q">4. ما عناصر تقييم الأداء الفعال وفق إيفانشيفيتش وماتيسون (2002)؟</div>
+    <textarea placeholder="اكتب إجابتك هنا..."></textarea>
+    <button class="model-btn" onclick="toggleModel(this)">👁️ الإجابة النموذجية</button>
+    <div class="model-ans">حدد إيفانشيفيتش وماتيسون (2002) ستة عناصر لتقييم الأداء الفعال:<br>1. <strong>مشاركة الموظفين</strong> في عملية التقييم لزيادة رضاهم.<br>2. <strong>أهداف الأداء المحددة</strong> وليست عامة.<br>3. <strong>تدريب المدراء</strong> على جوهر وأسلوب التقييم.<br>4. <strong>الإبلاغ عن النتائج</strong> بشكل صحيح للموظف.<br>5. <strong>إدراك الأداء الجيد وتعزيزه</strong> لا الاقتصار على أوجه القصور.<br>6. <strong>التقييم المستمر</strong> على مدار العام وليس مرة واحدة فقط.</div>
+  </div>
+
+  <div class="essay-card">
+    <div class="essay-q">5. ما الفرق بين المكافآت المهنية والمكافآت الاجتماعية؟</div>
+    <textarea placeholder="اكتب إجابتك هنا..."></textarea>
+    <button class="model-btn" onclick="toggleModel(this)">👁️ الإجابة النموذجية</button>
+    <div class="model-ans"><strong>المكافآت المهنية:</strong> تستهدف الأمن الوظيفي والنمو المهني. مثال: تقديم الجامعة رسوماً دراسية مجانية لموظفيها لتحسين مؤهلاتهم — تكلفة منخفضة للمنظمة ومنفعة كبيرة للموظف.<br><strong>المكافآت الاجتماعية:</strong> تُعزز المكانة الاجتماعية والشعور بالتميز دون زيادة مالية مباشرة. مثال: الصالة التنفيذية — غرفة خاصة واسعة للمديرين التنفيذيين تشمل مساحة عمل مريحة وحانات للاسترخاء.</div>
+  </div>
+
+  <div class="essay-card">
+    <div class="essay-q">6. ما المقصود بأهمية المهمة والوضع الاستراتيجي في تصميم الوظيفة؟</div>
+    <textarea placeholder="اكتب إجابتك هنا..."></textarea>
+    <button class="model-btn" onclick="toggleModel(this)">👁️ الإجابة النموذجية</button>
+    <div class="model-ans"><strong>أهمية المهمة:</strong> تعكس درجة تأثير الوظيفة على حياة الآخرين سواء داخل المنظمة أو خارجها. كلما عرف الموظف أن عمله يؤثر على سلامة شخص آخر أو صحته، اهتم به أكثر وبذل جهداً أعلى.<br><strong>الوضع الاستراتيجي:</strong> يُحدَّد من خلال معرفة وزن وظيفة محددة بالنسبة للإنجاز العام للمجموعة. مثال: أداء الرامي في البيسبول أكثر أهمية لنجاح الفريق من أي منصب آخر — فهذه الوظيفة تحتل وضعاً استراتيجياً أعلى.</div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="panel-result" class="panel">
+  <div class="result-box">
+    <div style="font-size:2.2rem">🏆</div>
+    <div class="result-score" id="total-sc">— / 40</div>
+    <div class="result-msg" id="result-msg">أجب على الأسئلة أولاً لتظهر نتيجتك</div>
+    <div class="result-grid">
+      <div class="result-item"><strong id="r-tf">—</strong>صح وخطأ<br><small>من 20</small></div>
+      <div class="result-item"><strong id="r-mcq">—</strong>اختيار متعدد<br><small>من 20</small></div>
+      <div class="result-item"><strong id="r-pct">—</strong>النسبة المئوية</div>
+    </div>
+    <button class="restart-btn" onclick="resetAll()">🔄 إعادة الاختبار كاملاً</button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+var TF_ANS = {
+  1:true,2:false,3:true,4:false,5:true,
+  6:false,7:true,8:false,9:false,10:true,
+  11:false,12:true,13:false,14:true,15:false,
+  16:true,17:false,18:true,19:false,20:true
+};
+var TF_EXP = {
+  1:"صحيح — العدالة التنظيمية تُعنى بأن تكون جميع أنشطة المنظمة عادلة ومنصفة.",
+  2:"خطأ — هذا المنظور الأخلاقي. منظور الأعمال يركز على الخسائر الناجمة عن الممارسات الظالمة كمقاطعة المنتجات وانخفاض الإنتاجية.",
+  3:"صحيح — مبدأ الإنصاف يوزع الموارد بناءً على المساهمات (جهد + قدرة + أداء).",
+  4:"خطأ — قاعدة النتائج تعني المساواة على مدى فترة من الزمن وعدة حالات توزيع. أما المساواة في وقت محدد فهي قاعدة المعالجة.",
+  5:"صحيح — قاعدة التصحيح تتيح للمدراء تعديل قرارات التخصيص وتصحيح الأخطاء غير المقصودة.",
+  6:"خطأ — تصميم الوظيفة هو عملية إسناد المهام إلى وظيفة بما في ذلك الترابط مع وظائف أخرى. أما اختيار الموظف فهو عملية التوظيف.",
+  7:"صحيح — التدوير الوظيفي يجعل الموظفين أكثر إلماماً بالمهام المختلفة مما يزيد المرونة في الاستبدال.",
+  8:"خطأ — الاستراتيجية الأقوى في تحقيق الرضا الحقيقي هي الإثراء الوظيفي وليس التوسيع. التوسيع يضيف مهاماً أكثر فقط.",
+  9:"خطأ — هذا هو دور المواصفات الوظيفية. الوصف الوظيفي يصف الواجبات والمسؤوليات فقط.",
+  10:"صحيح — سوليفان (1997) أشار إلى أن التوظيف ليس سهلاً وهو يختلف عن استهداف العملاء.",
+  11:"خطأ — منظور المواطنة يركز على التنبؤ بالتفاعلات الاجتماعية وتوافق قيم المرشح مع المنظمة. المهارات التقنية هي المنظور التقني.",
+  12:"صحيح — التوظيف المؤقت أرخص لأنه لا حوافز ولا ترقيات ولا مزايا كاملة.",
+  13:"خطأ — العقد النفسي توقعات ضمنية غير مكتوبة وغير رسمية، وليس وثيقة رسمية.",
+  14:"صحيح — الهدف التطويري يساعد الأعضاء على تنمية مهاراتهم وقدراتهم.",
+  15:"خطأ — خطأ الهالة يعني تأثير الأداء الجيد في جانب واحد على تقييم الجوانب الأخرى. التصنيف المرتفع بسبب التساهل هو خطأ التساهل.",
+  16:"صحيح — سلوك المواطنة التنظيمية تقديري وغير معترف به رسمياً لكنه يعزز الأداء الفعّال.",
+  17:"خطأ — التأمين الطبي والإجازة المدفوعة مكافآت غير مباشرة. المكافآت المباشرة هي الراتب والأجور وعلاوات الجدارة.",
+  18:"صحيح — SPJS له ثلاثة أبعاد: الهيكل (5) + الاجتماعية (5) + الإضافية (1) = 11 عنصراً.",
+  19:"خطأ — الأقدمية لها أثر سلبي على دوافع الموظفين الشباب وليس إيجابياً.",
+  20:"صحيح — مزيج المكافآت يجمع بين أسس متعددة: العمل والمهارة والأقدمية والأداء."
+};
+var MCQ_EXP = {
+  1:"منظور الأعمال يركز على الخسائر: مقاطعة المنتجات وانخفاض الإنتاجية بسبب الممارسات الظالمة.",
+  2:"الأقدمية ليست قاعدة فرعية للإنصاف. القواعد الثلاث هي: الجهد، القدرة، الأداء.",
+  3:"الأخلاق: التخصيصات يجب أن تلتزم بالمعايير الأخلاقية والأخلاقية السائدة في المجتمع.",
+  4:"هيرزبرغ (1974) حدد ثمانية مميزات للوظيفة الثرية.",
+  5:"صلاحية التواصل المباشر: يُمنح الموظف سلطة التواصل مباشرةً مع أصحاب المصلحة.",
+  6:"تبسيط الوظائف يقوم على نهج يجعل الأفراد يتناسبون مع الوظيفة مهما كان تصميمها.",
+  7:"الخطوة الأولى هي تقييم الاحتياجات من الموظفين، ثم تحليل الوظيفة، ثم الوصف الوظيفي.",
+  8:"شنيدر وبوين (1992): الأفراد يُوظَّفون بناءً على هويتهم وليس فقط إمكاناتهم.",
+  9:"الطرد = عقوبة على مخالفة (دائم). التسريح = قرار تنظيمي لتقليص الموظفين (مؤقت أو دائم).",
+  10:"التنبؤية من أبعاد الهيكل: النهج مرتبط بالوظيفة. أما المعالجة والانفتاح ونوعية الأسئلة فمن الأبعاد الاجتماعية.",
+  11:"الهدف الإداري: تقييم مقارن لاتخاذ قرارات الراتب والترقية والاحتفاظ بالموظفين.",
+  12:"الانضباط الشخصي: مدى التزام الموظف بالمعايير المهنية والمجتمعية.",
+  13:"خطأ الحداثة: تقييم الأداء السنوي بناءً على أحدث سلوك للموظف فقط.",
+  14:"هنج 360 درجة: ردود فعل من مصادر متعددة (مدير + زملاء + عملاء) لصورة أشمل وأدق.",
+  15:"بورتر ولر (1968): الصلة بين الأداء والمكافآت تؤثر بقوة على مستوى الدافعية للأداء.",
+  16:"المكافآت غير المباشرة: التأمين الطبي، الإجازة المدفوعة، الضمان الاجتماعي.",
+  17:"لولر (1987): مشاركة الأعضاء في قرارات الأجور تخلق ثقافة المشاركة.",
+  18:"الأقدمية: سهلة القياس وموضوعية ومقارنة بالأسس الأخرى، لذا شائعة في الحكومية.",
+  19:"العقد النفسي: توقعات ضمنية غير مكتوبة تشمل التزامات وامتيازات غير رسمية.",
+  20:"روز (2014): نهج 'الأنسب' — تكييف المكافآت مع ثقافة المنظمة لا تقليد السوق أعمى."
+};
+
+// ===== STATE =====
+var tfScore=0, mcqScore=0, tfDone={}, mcqDone={};
+
+// ===== TF =====
+function doTF(n, chosen) {
+  if (tfDone[n]) return;
+  tfDone[n] = true;
+  var correct = TF_ANS[n];
+  var card = document.getElementById('tc'+n);
+  var btns = card.querySelectorAll('.tf-btn');
+  var fb = document.getElementById('tf-fb'+n);
+  btns.forEach(function(b){b.disabled=true;});
+  var right = (chosen===correct);
+  if (right) {
+    tfScore++;
+    btns.forEach(function(b){
+      var isSah = b.textContent.indexOf('صح')>-1;
+      if((isSah&&correct)||(!isSah&&!correct)){b.classList.add('ok');}
+    });
+    fb.className='fb show fb-ok';
+    fb.textContent='✓ صحيح! '+TF_EXP[n];
+  } else {
+    btns.forEach(function(b){
+      var isSah = b.textContent.indexOf('صح')>-1;
+      if((isSah&&chosen)||(!isSah&&!chosen)){b.classList.add('err');}
+      if((isSah&&correct)||(!isSah&&!correct)){b.classList.add('show-ok');}
+    });
+    fb.className='fb show fb-err';
+    fb.textContent='✗ خطأ. '+TF_EXP[n];
+  }
+  document.getElementById('tf-sc').textContent=tfScore+' / 20';
+  document.getElementById('tf-bar').style.width=(tfScore/20*100)+'%';
+  updateResult();
+}
+function resetTF(){
+  tfScore=0; tfDone={};
+  for(var i=1;i<=20;i++){
+    var card=document.getElementById('tc'+i);
+    card.querySelectorAll('.tf-btn').forEach(function(b){b.disabled=false;b.className='tf-btn';});
+    var fb=document.getElementById('tf-fb'+i);
+    fb.className='fb'; fb.textContent='';
+  }
+  document.getElementById('tf-sc').textContent='0 / 20';
+  document.getElementById('tf-bar').style.width='0%';
+  updateResult();
+}
+
+// ===== MCQ =====
+function doMCQ(n, el, correct) {
+  if (mcqDone[n]) return;
+  mcqDone[n]=true;
+  var opts=document.getElementById('mo'+n).querySelectorAll('.opt');
+  var fb=document.getElementById('mcq-fb'+n);
+  opts.forEach(function(o){o.disabled=true;});
+  if(correct){
+    mcqScore++;
+    el.classList.add('ok');
+    fb.className='fb show fb-ok';
+    fb.textContent='✓ صحيح! '+MCQ_EXP[n];
+  } else {
+    el.classList.add('err');
+    opts.forEach(function(o){
+      if(o.getAttribute('onclick')&&o.getAttribute('onclick').indexOf(',true)')>-1){o.classList.add('show-ok');}
+    });
+    fb.className='fb show fb-err';
+    fb.textContent='✗ خطأ. '+MCQ_EXP[n];
+  }
+  document.getElementById('mcq-sc').textContent=mcqScore+' / 20';
+  document.getElementById('mcq-bar').style.width=(mcqScore/20*100)+'%';
+  updateResult();
+}
+function resetMCQ(){
+  mcqScore=0; mcqDone={};
+  for(var i=1;i<=20;i++){
+    document.getElementById('mo'+i).querySelectorAll('.opt').forEach(function(o){
+      o.disabled=false; o.className='opt';
+    });
+    var fb=document.getElementById('mcq-fb'+i);
+    fb.className='fb'; fb.textContent='';
+  }
+  document.getElementById('mcq-sc').textContent='0 / 20';
+  document.getElementById('mcq-bar').style.width='0%';
+  updateResult();
+}
+
+// ===== RESULT =====
+function updateResult(){
+  var total=tfScore+mcqScore;
+  var pct=Math.round(total/40*100);
+  document.getElementById('total-sc').textContent=total+' / 40';
+  document.getElementById('r-tf').textContent=tfScore+'/20';
+  document.getElementById('r-mcq').textContent=mcqScore+'/20';
+  document.getElementById('r-pct').textContent=pct+'%';
+  var msg='';
+  if(pct>=90)msg='🌟 ممتاز! أداء رائع';
+  else if(pct>=75)msg='✅ جيد جداً! استمر';
+  else if(pct>=60)msg='👍 جيد — راجع النقاط الضعيفة';
+  else msg='📚 تحتاج مراجعة — لا تستسلم!';
+  document.getElementById('result-msg').textContent=msg;
+}
+
+// ===== ESSAY =====
+function toggleModel(btn){
+  var ans=btn.nextElementSibling;
+  if(ans.classList.contains('show')){ans.classList.remove('show');btn.textContent='👁️ الإجابة النموذجية';}
+  else{ans.classList.add('show');btn.textContent='🙈 إخفاء الإجابة';}
+}
+
+// ===== TABS =====
+function showP(name,tab){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('panel-'+name).classList.add('active');
+  tab.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ===== RESET ALL =====
+function resetAll(){
+  resetTF(); resetMCQ();
+  document.querySelectorAll('textarea').forEach(function(t){t.value='';});
+  document.querySelectorAll('.model-ans').forEach(function(a){a.classList.remove('show');});
+  document.querySelectorAll('.model-btn').forEach(function(b){b.textContent='👁️ الإجابة النموذجية';});
+}
+</script>
+</body>
+</html>
